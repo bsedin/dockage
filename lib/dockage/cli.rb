@@ -12,12 +12,20 @@ module Dockage
 
     desc 'status [CONTAINER]', 'Show status overall or specified container'
     def status(container = nil)
-      # puts Dockage.settings
-      # Docker.status container
+      containers = if container && Dockage.settings.containers
+                     Dockage.settings.containers.select{|x| x.name.to_s == container.to_s}
+                   else
+                     Dockage.settings.containers
+                   end
+
+      containers.each do |container|
+        puts Dockage::Docker.ps(container.name)
+      end
     end
 
     desc 'init', 'Create example config file'
     def init
+      Dockage.create_example_config
     end
 
     desc 'up [CONTAINER]', 'Create and run specified [CONTAINER] or all configured containers'

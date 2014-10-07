@@ -1,16 +1,14 @@
 require 'hashie'
 
 module Dockage
-  class Settings < Hashie::Mash
-    def initialize(config_path = 'dockage.yml')
-      raise DockageConfigNotFound unless File.exist? config_path
-      load_config config_path
+  class Settings
+
+    class << self
+      def load(config_path = 'dockage.yml')
+        raise DockageConfigNotFound unless File.exist? config_path
+        Hashie::Mash.load config_path
+      end
     end
 
-    private
-
-    def load_config(config_file)
-      Hashie::Mash.load config_file
-    end
   end
 end

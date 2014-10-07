@@ -1,7 +1,9 @@
+require 'fileutils'
 require 'dockage/version'
 
 module Dockage
   autoload :Settings, 'dockage/settings'
+  autoload :Docker, 'dockage/docker'
 
   class DockageError          < StandardError; end
   class DockageConfigNotFound < DockageError; end
@@ -19,7 +21,14 @@ module Dockage
     end
 
     def settings
-      @settings ||= Settings.new(config_path)
+      @settings ||= Settings.load(config_path)
     end
+
+    def create_example_config
+      return puts "docker.yml already exists" if File.exist? config_path
+      FileUtils.cp File.expand_path('../dockage/templates/dockage.yml', __FILE__), config_path
+      puts "Created example config dockage.yml"
+    end
+
   end
 end

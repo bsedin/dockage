@@ -24,8 +24,8 @@ module Dockage
         invoke('status')
       end
 
-      def ps
-        invoke('ps')
+      def ps(args)
+        invoke("ps", args)
       end
 
       def version
@@ -34,13 +34,13 @@ module Dockage
 
       private
 
-      def invoke(cmd)
-        `#{env} docker #{cmd}`
+      def invoke(cmd, args)
+        `#{env} docker #{cmd} #{args}`
       end
 
       def env
-        if Dockage::Settings.docker_host && Dockage::Settings.docker_port
-          "DOCKER_HOST=tcp://#{Dockage::Settings.docker_host}:#{Dockage::Settings.docker_port}"
+        if Dockage.settings.docker_host && Dockage.settings.docker_port
+          "DOCKER_HOST=tcp://#{Dockage.settings.docker_host}:#{Dockage.settings.docker_port}"
         end
       end
     end
