@@ -6,16 +6,19 @@ module Dockage
       def execute(provision, opts)
         return Dockage.logger('Nothing to provide') unless provision
         set_ssh_command(opts)
-        Dockage.logger("Provisioning #{provision.map{|k,v| "#{k.to_s.yellow}: #{v.to_s}"}.join}")
+        Dockage.logger("Provisioning #{ provision.map{ |k,v| "#{k.to_s.yellow}: #{v}" }.join }")
         execute = "#{@command} #{provision[:inline]}" if provision[:inline]
-        execute = "cat #{provision[:script]} | #{@command}" if provision[:script]
+        if provision[:script]
+          Dockage.error("File #{provision[:script].bold} is not exist") unless File.exist?(provision[:script])
+          execute = "cat #{provision[:script]} | #{@command}"
+        end
         Dockage.verbose(execute)
         system(execute)
       end
 
       def connect(opts)
         set_ssh_command(opts)
-        @command.blue if Dockage.debug_mode
+        Dockage.debug(@command)
         system(@command)
         exit 0
       end

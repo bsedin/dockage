@@ -2,14 +2,10 @@ module Dockage
   module Docker
     class Shell
 
-      DOCKER_DEFAULT_HOST = "unix:///var/run/docker.sock"
+      DOCKER_DEFAULT_HOST = 'unix:///var/run/docker.sock'
 
       def initialize
-        @env = "DOCKER_HOST=#{Dockage.settings.docker_host || DOCKER_DEFAULT_HOST}"
-      end
-
-      def images
-        invoke('images')
+        @env = "DOCKER_HOST=#{Dockage.settings[:docker_host] || DOCKER_DEFAULT_HOST}"
       end
 
       def pull(image)
@@ -17,24 +13,35 @@ module Dockage
       end
 
       def start(name)
-        return Dockage.logger("Container #{name.bold.yellow} is already running") if container_running?(name)
+        if container_running?(name)
+          Dockage.logger("Container #{name.bold.yellow} is already running")
+          return
+        end
         invoke("start #{name}", catch_errors: true)
       end
 
       def stop(name)
-        return Dockage.logger("Container #{name.bold.yellow} is not running") unless container_running?(name)
+        unless container_running?(name)
+          Dockage.logger("Container #{name.bold.yellow} is not running")
+          return
+        end
         invoke("stop #{name}", catch_errors: true)
       end
 
       def destroy(name)
-        return Dockage.logger("Container #{name.bold.yellow} not found") unless container_exists?(name)
+        unless container_exists?(name)
+          Dockage.logger("Container #{name.bold.yellow} not found")
+          return
+        end
         Dockage.logger("Destroying container #{name.bold.yellow}")
         invoke("rm #{name}", catch_errors: false)
       end
 
       def provide(container)
         raise SSHOptionsError unless container[:ssh]
-        Dockage.error("Container #{container[:name].bold.yellow} is not running") unless container_running?(container[:name])
+        unless container_running?(container[:name])
+          Dockage.error("Container #{container[:name].bold.yellow} is not running")
+        end
         container[:provision].each do |provision|
           SSH.execute(provision, container[:ssh])
         end
@@ -45,7 +52,7 @@ module Dockage
       end
 
       def ps(name = nil, all = false)
-        ps_output = invoke("ps --no-trunc #{all ? '-a ' : ''}", attach_std: false).split(/\n/)
+        ps_output = invoke("ps --no-trunc #{all && '-a '}", attach_std: false).split(/\n/)
         containers = Parse.parse_docker_ps(ps_output)
         containers.reject! { |con| con[:name] != name } if name
         containers
@@ -53,7 +60,8 @@ module Dockage
 
       def up(container)
         if container_running?(container[:name])
-          return Dockage.logger("Container #{container[:name].bold} is already up. Nothing to do")
+          Dockage.logger("Container #{container[:name].bold} is already up. Nothing to do")
+          return
         end
         return start(container[:name]) if container_exists?(container[:name])
         pull(container[:image]) if container[:keep_fresh]
@@ -69,13 +77,13 @@ module Dockage
       def status(name = nil)
         output = ''
 
-        containers = Dockage.settings.containers
-        containers = containers.select { |con| con.name == name } if name
+        containers = Dockage.settings[:containers]
+        containers = containers.select { |con| con[:name] == name } if name
 
         active_containers = ps(name, true)
         containers.each do |container|
           output += "#{container[:name].to_s.bold.yellow} is "
-          docker_container = active_containers.select { |con| con[:name] == container.name }.first
+          docker_container = active_containers.select { |con| con[:name] == container[:name] }.first
           if docker_container
             output += docker_container[:running] ? 'running'.green : 'not running'.red
           else
@@ -104,14 +112,14 @@ module Dockage
       end
 
       def run(image, opts = {})
-        command = 'run'
-        opts[:detach] == false || command += ' -d'
-        opts[:links]           && command += opts[:links].map { |link| " --link #{link}" }.join
-        opts[:volumes]         && command += opts[:volumes].map { |volume| " -v #{volume}" }.join
-        opts[:ports]           && command += opts[:ports].map { |port| " -p #{port}" }.join
-        opts[:name]            && command += " --name #{opts[:name]}"
-        command += " #{image}"
-        opts[:cmd]             && command += " /bin/sh -c '#{opts[:cmd]}'"
+        command = "run" \
+          "#{opts[:detach] == false || ' -d'}" \
+          "#{opts[:links]   && opts[:links].map { |link| " --link #{link}" }.join}" \
+          "#{opts[:volumes] && opts[:volumes].map { |volume| " -v #{volume}" }.join}" \
+          "#{opts[:ports]   && opts[:ports].map { |port| " -p #{port}" }.join}" \
+          "#{opts[:name]    && " --name #{opts[:name]}"}" \
+          " #{image}" \
+          "#{opts[:cmd] && " /bin/sh -c '#{opts[:cmd]}'"}"
         invoke(command)
       end
 

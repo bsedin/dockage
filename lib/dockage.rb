@@ -35,7 +35,7 @@ module Dockage
 
     def create_example_config
       raise DockageConfigExists if File.exist? config_path
-      FileUtils.cp File.expand_path('../dockage/templates/dockage.yml', __FILE__), config_path
+      FileUtils.cp(File.expand_path('../dockage/templates/dockage.yml', __FILE__), config_path)
       puts 'Created example config dockage.yml'
     end
 
@@ -62,12 +62,12 @@ module Dockage
 
     def logger(string)
       return unless string
-      puts string unless Dockage.quiet_mode
+      puts "> #{string}" unless Dockage.quiet_mode
     end
 
     def error(string = 'unknown error')
       puts string.red unless Dockage.quiet_mode
-      exit 0
+      exit 1
     end
   end
 end

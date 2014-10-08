@@ -4,7 +4,6 @@ require 'colorize'
 
 module Dockage
   class CLI < Thor
-
     def initialize(*)
       super
       Dockage.verbose_mode = options[:debug] || !!options[:verbose]
@@ -32,39 +31,39 @@ module Dockage
     desc 'up [CONTAINER]', 'Create and run specified [CONTAINER] or all configured containers'
     def up(name = nil)
       find_containers(name).each do |container|
-        puts "Bringing up #{container.name.yellow.bold}"
-        Dockage::Docker.shell.up(container.to_hash(symbolize_keys: true))
+        Dockage.logger("Bringing up #{container[:name].yellow.bold}")
+        Dockage::Docker.shell.up(container)
       end
     end
 
     desc 'reload [CONTAINER]', 'Reload specified [CONTAINER] or all configured containers'
     def reload(name = nil)
       find_containers(name).each do |container|
-        puts "Reloading #{container.name.yellow.bold}"
-        Dockage::Docker.shell.reload(container.to_hash(symbolize_keys: true))
+        puts "Reloading #{container[:name].yellow.bold}"
+        Dockage::Docker.shell.reload(container)
       end
     end
 
     desc 'provide CONTAINER', 'Run provision scripts on specified CONTAINER'
     def provide(name)
       container = find_container(name)
-      Dockage.error("SSH is not configured for #{container.name.bold}") unless container.ssh
-      Dockage::Docker.shell.provide(container.to_hash(symbolize_keys: true))
+      Dockage.error("SSH is not configured for #{container[:name].bold}") unless container[:ssh]
+      Dockage::Docker.shell.provide(container)
     end
 
     desc 'destroy [CONTAINER]', 'Destroy specified [CONTAINER] or all configured containers'
     def destroy(name = nil)
       find_containers(name).each do |container|
-        Dockage::Docker.shell.stop(container.name)
-        Dockage::Docker.shell.destroy(container.name)
+        Dockage::Docker.shell.stop(container[:name])
+        Dockage::Docker.shell.destroy(container[:name])
       end
     end
 
     desc 'ssh CONTAINER', 'SSH login to CONTAINER'
     def ssh(name)
       container = find_container(name)
-      Dockage.error("SSH is not configured for #{container.name.bold}") unless container.ssh
-      Dockage::SSH.connect(container.ssh.to_hash(symbolize_keys: true))
+      Dockage.error("SSH is not configured for #{container[:name].bold}") unless container[:ssh]
+      Dockage::SSH.connect(container[:ssh])
     end
 
     desc 'shellinit', 'export DOCKER_HOST variable to current shell'
@@ -86,15 +85,15 @@ CMD
 
     def find_containers(name = nil)
       if name
-        Dockage.settings.containers.select { |x| x.name.to_s == name.to_s }
+        Dockage.settings[:containers].select { |x| x[:name].to_s == name.to_s }
       else
-        Dockage.settings.containers
+        Dockage.settings[:containers]
       end
     end
 
     def find_container(name = nil)
       container = find_containers(name).first
-      Dockage.error("There is no settings for container #{name.bold}") if !container
+      Dockage.error("There is no settings for container #{name.bold}") unless container
       container
     end
   end

@@ -3,7 +3,6 @@ require 'dockage'
 
 module Dockage
   module Docker
-
     autoload :Parse,  'dockage/docker/parse'
     autoload :Shell,  'dockage/docker/shell'
 
@@ -12,6 +11,5 @@ module Dockage
         @shell ||= Shell.new
       end
     end
-
   end
 end

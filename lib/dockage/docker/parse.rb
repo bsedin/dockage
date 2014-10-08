@@ -1,7 +1,6 @@
 module Dockage
   module Docker
     module Parse
-
       class << self
         def parse_docker_ps(string)
           header = string.shift
@@ -19,8 +18,12 @@ module Dockage
 
           string.map do |container_string|
             container           = Hash[keys.map { |k, v| [k, container_string[v[:start]..v[:stop]].strip] }]
-            container[:name]    = container[:names].to_s.split(',').last
-            container[:running] = container[:status].downcase.include?('up') ? true : false
+            container[:name]    = container[:names].to_s
+                                                   .split(',')
+                                                   .reject{ |v| v.include?('/') }
+                                                   .first
+            container[:running] = container[:status].downcase
+                                                    .include?('up') ? true : false
             container
           end
         end
