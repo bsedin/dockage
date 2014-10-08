@@ -10,7 +10,7 @@ Gem::Specification.new do |spec|
   spec.email         = ['kr3ssh@gmail.com']
   spec.summary       = 'Control multiple docker containers with ease'
   spec.description   = 'Gem to manage multiple docker containers at once'
-  spec.homepage      = 'http://github.com/kr3ssh/dockage'
+  spec.homepage      = 'http://github.com/kressh/dockage'
   spec.license       = 'MIT'
 
   spec.required_ruby_version     = '>= 1.9'
