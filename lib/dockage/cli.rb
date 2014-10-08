@@ -33,10 +33,7 @@ module Dockage
     def up(name = nil)
       find_containers(name).each do |container|
         puts "Bringing up #{container.name.yellow.bold}"
-        Dockage::Docker.shell.stop(container.name)
-        Dockage::Docker.shell.destroy(container.name)
-        Dockage::Docker.shell.pull(container.image) if container.keep_fresh
-        Dockage::Docker.shell.run(container.image, container.to_hash(symbolize_keys: true))
+        Dockage::Docker.shell.up(container.to_hash(symbolize_keys: true))
       end
     end
 
@@ -44,13 +41,9 @@ module Dockage
     def reload(name = nil)
       find_containers(name).each do |container|
         puts "Reloading #{container.name.yellow.bold}"
-        Dockage::Docker.shell.stop(container.name)
-        Dockage::Docker.shell.destroy(container.name)
-        Dockage::Docker.shell.pull(container.image) if container.keep_fresh
-        Dockage::Docker.shell.run(container.image, container.to_hash(symbolize_keys: true))
+        Dockage::Docker.shell.reload(container.to_hash(symbolize_keys: true))
       end
     end
-
 
     desc 'provide CONTAINER', 'Run provision scripts on specified CONTAINER'
     def provide(name)

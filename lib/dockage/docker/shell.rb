@@ -47,6 +47,21 @@ module Dockage
         containers
       end
 
+      def up(container)
+        if container_running?(container[:name])
+          return Dockage.logger("Container #{container[:name].bold} is already up. Nothing to do")
+        end
+        return start(container[:name]) if container_exists?(container[:name])
+        pull(container[:image]) if container[:keep_fresh]
+        run(container[:image], container)
+      end
+
+      def reload(container)
+        stop(container[:name]) if container_running?(container[:name])
+        destroy(container[:name]) if container_exists?(container[:name])
+        up(container)
+      end
+
       def status(name = nil)
         output = ''
 
