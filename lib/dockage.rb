@@ -1,5 +1,6 @@
 require 'fileutils'
 require 'dockage/version'
+require 'colorize'
 
 module Dockage
   autoload :Settings, 'dockage/settings'
@@ -8,6 +9,7 @@ module Dockage
 
   class DockageError          < StandardError; end
   class DockageConfigNotFound < DockageError; end
+  class DockageConfigExists   < DockageError; end
   class ProvideError          < DockageError; end
   class InstallError          < DockageError; end
   class InvalidOptionError    < DockageError; end
@@ -15,6 +17,9 @@ module Dockage
 
   class << self
     attr_accessor :debug_mode
+    attr_accessor :verbose_mode
+    attr_accessor :quiet_mode
+    attr_accessor :force_mode
 
     def root
       @root ||= Dir.pwd
@@ -29,7 +34,7 @@ module Dockage
     end
 
     def create_example_config
-      return puts 'docker.yml already exists' if File.exist? config_path
+      raise DockageConfigExists if File.exist? config_path
       FileUtils.cp File.expand_path('../dockage/templates/dockage.yml', __FILE__), config_path
       puts 'Created example config dockage.yml'
     end
@@ -43,6 +48,26 @@ module Dockage
         end
         path && File.expand_path(executable, path)
       end
+    end
+
+    def debug(string)
+      return unless string
+      puts string.magenta if Dockage.debug_mode
+    end
+
+    def verbose(string)
+      return unless string
+      puts string.blue if Dockage.verbose_mode
+    end
+
+    def logger(string)
+      return unless string
+      puts string unless Dockage.quiet_mode
+    end
+
+    def error(string = 'unknown error')
+      puts string.red unless Dockage.quiet_mode
+      exit 0
     end
   end
 end

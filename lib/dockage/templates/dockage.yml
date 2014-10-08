@@ -1,30 +1,12 @@
-docker_host: localhost
-docker_port: 2375
+docker_host: unix:///var/run/docker.sock
 containers:
-  - name: hello_world_app
-    image: hello_world_app:latest
-    volumes:
-    - /home/user/projects/hello_world_app:/var/www/hello_world_app
-    ports:
-    - 80:8080
-    - 2220:22
-    links:
-      mongo: mongo
-      postgres: postgres
-    provisions:
-      - docker/provisions/ruby-build.sh
-      - docker/provisions/ruby-build.sh
-    ssh:
-      enabled: true
-      login: docker
-      identity_file: docker/ssh/id_rsa
-
-  - name: mongo
-    image: mongo:latest
-    volumes:
-    - /tmp/data/mongo:/data
-
   - name: postgres
     image: postgres:latest
+    keep_fresh: false
     volumes:
     - /tmp/data/pg:/var/lib/postgres/data
+
+  - name: hello
+    keep_fresh: true
+    image: debian:jessie
+    cmd: 'while true; do echo hello world; sleep 1; done'
