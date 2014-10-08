@@ -3,8 +3,17 @@ containers:
   - name: postgres
     image: postgres:latest
     keep_fresh: false
+    ports:
+      - '2220:22'
     volumes:
-    - /tmp/data/pg:/var/lib/postgres/data
+      - /tmp/data/pg:/var/lib/postgres/data
+    ssh:
+      enabled: true
+      login: root
+      host: 127.0.0.1
+      port: 2220
+    provision:
+      - inline: 'whoami'
 
   - name: hello
     keep_fresh: true

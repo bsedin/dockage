@@ -28,12 +28,16 @@ module Dockage
 
       def destroy(name)
         return Dockage.logger("Container #{name.bold.yellow} not found") unless container_exists?(name)
+        Dockage.logger("Destroying container #{name.bold.yellow}")
         invoke("rm #{name}", catch_errors: false)
       end
 
       def provide(container)
         raise SSHOptionsError unless container[:ssh]
-        Docker::SSH.remote_execute()
+        Dockage.error("Container #{container[:name].bold.yellow} is not running") unless container_running?(container[:name])
+        container[:provision].each do |provision|
+          SSH.execute(provision, container[:ssh])
+        end
       end
 
       def build

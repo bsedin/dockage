@@ -3,16 +3,14 @@ module Dockage
     class << self
       SSH_OPTS = %w( StrictHostKeyChecking=no UserKnownHostsFile=/dev/null )
 
-      def execute(opts)
-        if opts[:provider]
-          set_ssh_command(opts)
-          opts[:provider].each do |provider|
-            provider[:inline] && execute = "#{@command} #{provider[:inline]}"
-            provider[:script] && execute = "cat #{provider[:script]} | #{@command}"
-            execute.blue if Dockage.debug_mode
-            system(execute)
-          end
-        end
+      def execute(provision, opts)
+        return Dockage.logger('Nothing to provide') unless provision
+        set_ssh_command(opts)
+        Dockage.logger("Provisioning #{provision.map{|k,v| "#{k.to_s.yellow}: #{v.to_s}"}.join}")
+        execute = "#{@command} #{provision[:inline]}" if provision[:inline]
+        execute = "cat #{provision[:script]} | #{@command}" if provision[:script]
+        Dockage.verbose(execute)
+        system(execute)
       end
 
       def connect(opts)
@@ -29,6 +27,8 @@ module Dockage
         @command += SSH_OPTS.map { |opt| " -o #{opt}" }.join if SSH_OPTS.any?
         @command += " -i #{opts[:identity_file]}" if opts[:identity_file]
         @command += " #{opts[:login]}@#{opts[:host]}"
+        @command += " -p #{opts[:port]}" if opts[:port]
+        @command += " -q" unless Dockage.verbose_mode
       end
 
       private
