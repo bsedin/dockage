@@ -28,6 +28,7 @@ module Dockage
         return if @command
         @command = which_ssh
         @command += SSH_OPTS.map { |opt| " -o #{opt}" }.join if SSH_OPTS.any?
+        @command += " -A" if opts[:forward_agent]
         @command += " -i #{opts[:identity_file]}" if opts[:identity_file]
         @command += " #{opts[:login]}@#{opts[:host]}"
         @command += " -p #{opts[:port]}" if opts[:port]

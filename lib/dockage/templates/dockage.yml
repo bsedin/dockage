@@ -8,7 +8,7 @@ containers:
     volumes:
       - /tmp/data/pg:/var/lib/postgres/data
     ssh:
-      enabled: true
+      forward_agent: true
       login: root
       host: 127.0.0.1
       port: 2220
@@ -18,4 +18,6 @@ containers:
   - name: hello
     keep_fresh: true
     image: debian:jessie
+    links:
+      - postgres:postgres
     cmd: 'while true; do echo hello world; sleep 1; done'

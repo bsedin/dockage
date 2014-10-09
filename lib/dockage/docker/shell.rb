@@ -100,7 +100,7 @@ module Dockage
       end
 
       def shellinit
-        "export #{env}"
+        "export #{@env}"
       end
 
       def container_running?(name)
