@@ -152,8 +152,10 @@ module Dockage
         links = container[:links].map { |link| link.split(':').first }
         dependency_containers = containers.select { |con| links.include?(con[:name]) }
         dependency_containers.each do |dep_con|
-          Dockage.logger("Container #{container[:name].bold} has missing links and should be reloaded")
-          return true unless dep_con[:linked_with].include?(container[:name])
+          unless dep_con[:linked_with].include?(container[:name])
+            Dockage.logger("Container #{container[:name].bold} has missing links and should be reloaded")
+            return true
+          end
         end
         false
       end
