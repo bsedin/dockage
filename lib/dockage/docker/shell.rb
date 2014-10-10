@@ -5,7 +5,7 @@ module Dockage
       DOCKER_DEFAULT_HOST = 'unix:///var/run/docker.sock'
 
       def initialize
-        @env = "DOCKER_HOST=#{Dockage.settings[:docker_host] || DOCKER_DEFAULT_HOST}"
+        @env = "export DOCKER_HOST=#{Dockage.settings[:docker_host] || DOCKER_DEFAULT_HOST}"
       end
 
       def pull(image)
@@ -22,9 +22,10 @@ module Dockage
 
       def stop(name)
         unless container_running?(name)
-          Dockage.logger("Container #{name.bold.yellow} is not running")
+          Dockage.logger("Container #{name.bold.yellow} is not running. Nothing to do")
           return
         end
+        Dockage.logger("Stopping container #{name.bold.yellow}")
         invoke("stop #{name}", catch_errors: true)
       end
 
@@ -59,6 +60,8 @@ module Dockage
       end
 
       def up(container)
+        Dockage.logger("Bringing up #{container[:name].yellow.bold}")
+        return reload(container) if should_be_reload?(container)
         if container_running?(container[:name])
           Dockage.logger("Container #{container[:name].bold} is already up. Nothing to do")
           return
@@ -69,6 +72,7 @@ module Dockage
       end
 
       def reload(container)
+        return unless dependences_satisfied?(container)
         stop(container[:name]) if container_running?(container[:name])
         destroy(container[:name]) if container_exists?(container[:name])
         up(container)
@@ -113,20 +117,49 @@ module Dockage
 
       def run(image, opts = {})
         command = "run" \
-          "#{opts[:detach] == false || ' -d'}" \
+          "#{opts[:detach]  == false || ' -d'}" \
           "#{opts[:links]   && opts[:links].map { |link| " --link #{link}" }.join}" \
           "#{opts[:volumes] && opts[:volumes].map { |volume| " -v #{volume}" }.join}" \
           "#{opts[:ports]   && opts[:ports].map { |port| " -p #{port}" }.join}" \
           "#{opts[:name]    && " --name #{opts[:name]}"}" \
           " #{image}" \
-          "#{opts[:cmd] && " /bin/sh -c '#{opts[:cmd]}'"}"
+          "#{opts[:cmd]     && " /bin/sh -c '#{opts[:cmd]}'"}"
         invoke(command)
       end
 
       private
 
+      def dependences_satisfied?(container)
+        return true unless container[:links] && container[:links].any?
+        active_containers = ps
+        container[:links].each do |link|
+          dependency_name = link.split(':').first
+          next if active_containers.select { |con| con[:name] == dependency_name }.any?
+          dependency_container = Dockage.settings.containers.select { |con| con[:name] == dependency_name }.first
+          unless dependency_container
+            Dockage.error("#{dependency_name.bold} is required for " \
+                         "#{container[:name]} but does not specified " \
+                         "in config file")
+          end
+          up(dependency_container)
+        end
+      end
+
+      def should_be_reload?(container)
+        return false unless container[:links]
+        containers = ps(nil, true)
+        return false unless containers.select { |con| con[:name] == container[:name] }.any?
+        links = container[:links].map { |link| link.split(':').first }
+        dependency_containers = containers.select { |con| links.include?(con[:name]) }
+        dependency_containers.each do |dep_con|
+          Dockage.logger("Container #{container[:name].bold} has missing links and should be reloaded")
+          return true unless dep_con[:linked_with].include?(container[:name])
+        end
+        false
+      end
+
       def invoke(cmd, opts = {})
-        command = "#{@env} docker #{cmd}"
+        command = "#{@env} && docker #{cmd}"
         Dockage.verbose(command)
         if opts[:attach_std]
           output = sys_exec(command, opts[:catch_errors])

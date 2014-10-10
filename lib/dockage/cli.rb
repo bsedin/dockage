@@ -31,7 +31,6 @@ module Dockage
     desc 'up [CONTAINER]', 'Create and run specified [CONTAINER] or all configured containers'
     def up(name = nil)
       find_containers(name).each do |container|
-        Dockage.logger("Bringing up #{container[:name].yellow.bold}")
         Dockage::Docker.shell.up(container)
       end
     end
@@ -56,6 +55,13 @@ module Dockage
       find_containers(name).each do |container|
         Dockage::Docker.shell.stop(container[:name])
         Dockage::Docker.shell.destroy(container[:name])
+      end
+    end
+
+    desc 'stop [CONTAINER]', 'Stop specified [CONTAINER] or all configured containers'
+    def stop(name = nil)
+      find_containers(name).each do |container|
+        Dockage::Docker.shell.stop(container[:name])
       end
     end
 

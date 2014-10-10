@@ -17,13 +17,12 @@ module Dockage
           end
 
           string.map do |container_string|
-            container           = Hash[keys.map { |k, v| [k, container_string[v[:start]..v[:stop]].strip] }]
-            container[:name]    = container[:names].to_s
-                                                   .split(',')
-                                                   .reject{ |v| v.include?('/') }
-                                                   .first
-            container[:running] = container[:status].downcase
-                                                    .include?('up') ? true : false
+            container               = Hash[keys.map { |k, v| [k, container_string[v[:start]..v[:stop]].strip] }]
+            container[:names]       = container[:names].to_s.split(',')
+            container[:name]        = container[:names].reject{ |v| v.include?('/') }.first
+            container[:linked_with] = container[:names].map{ |name| name.split('/')[0] }.compact
+            container[:running]     = container[:status].downcase
+                                                        .include?('up') ? true : false
             container
           end
         end
