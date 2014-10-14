@@ -46,7 +46,7 @@ Modify it and run
       * **login** - SSH login
       * **host** - SSH host. In most cases docker daemon host.
       * **port** - SSH port. Forward this port to docker host.
-      * **identity_file** - SSH private key to authenticate with
+      * **identity_key** - SSH private key file or string to authenticate with
     * **provision** - array of provision scripts. Can be script or inline. Requires SSH access to container.
 
 ## Contributing
