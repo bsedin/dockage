@@ -121,6 +121,7 @@ module Dockage
           "#{opts[:links]   && opts[:links].map { |link| " --link #{link}" }.join}" \
           "#{opts[:volumes] && opts[:volumes].map { |volume| " -v #{volume}" }.join}" \
           "#{opts[:ports]   && opts[:ports].map { |port| " -p #{port}" }.join}" \
+          "#{opts[:env]     && opts[:env].map { |env, val| " -e '#{env}=#{val}'"}.join}" \
           "#{opts[:name]    && " --name #{opts[:name]}"}" \
           " #{image}" \
           "#{opts[:cmd]     && " /bin/sh -c '#{opts[:cmd]}'"}"
