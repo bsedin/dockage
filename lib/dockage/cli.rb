@@ -15,7 +15,7 @@ module Dockage
     class_option 'verbose',  type: :boolean, banner: 'Enable verbose output mode', aliases: '-v'
     class_option 'debug',  type: :boolean, banner: 'Enable debug output mode'
     class_option 'quiet',  type: :boolean, banner: 'Suppress all output', aliases: '-q'
-    class_option 'force',  type: :boolean, banner: 'Run actions with force', aliases: '-f'
+    class_option 'force',  type: :boolean, banner: 'Run actions with Force', aliases: '-f'
 
     desc 'status [CONTAINER]', 'Show status overall or specified container'
     def status(name = nil)

@@ -69,6 +69,7 @@ module Dockage
         return start(container[:name]) if container_exists?(container[:name])
         pull(container[:image]) if container[:keep_fresh]
         run(container[:image], container)
+        provide(container) if container[:provision]
       end
 
       def reload(container)
@@ -124,7 +125,7 @@ module Dockage
           "#{opts[:env]     && opts[:env].map { |env, val| " -e '#{env}=#{val}'"}.join}" \
           "#{opts[:name]    && " --name #{opts[:name]}"}" \
           " #{image}" \
-          "#{opts[:cmd]     && " /bin/sh -c '#{opts[:cmd]}'"}"
+          "#{opts[:cmd]     && " #{opts[:cmd]}"}"
         invoke(command)
       end
 
