@@ -49,6 +49,67 @@ Modify it and run
       * **identity_key** - SSH private key file or string to authenticate with
     * **provision** - array of provision scripts. Can be script or inline. Requires SSH access to container.
 
+## dockage.yml example
+
+```
+docker_host: tcp://localhost:2375
+containers:
+  - name: postgres
+    image: postgres:latest
+    keep_fresh: false
+    cmd: 'usermod -u 1000 postgres && groupmod -g 1000 postgres && chown -R postgres /var/run/postgresql && /docker-entrypoint.sh postgres'
+    volumes:
+      - /home/username/data/postgres:/var/lib/postgres
+
+  - name: myapp
+    image: kr3ssh/debian-rails
+    keep_fresh: true
+    env:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_USER: postgres
+    ssh:
+      forward_agent: true
+      login: rack
+      host: 127.0.0.1
+      port: 2220
+      identity_key: |
+        -----BEGIN RSA PRIVATE KEY-----
+        MIIEowIBAAKCAQEAzLDckHc9OaK+aN46L845Xpr7/LCJpOuPYonFCKct4Nhw4BUU
+        YqDDquhWlwzGGSjoHWTR33txZvWtj/kqSXYW/t86q2Wd5jwUmDpmMmSsMKAx5VLI
+        KvdCCCgV9pr30taDpvsTjhNzXFo5E2fq+kYGlrfIiiMJ1tEZD5lS5XNTCCpaf73D
+        8qOR6bIV0/PfrCcmr14aBIRmnJ+fHpW45I55QJI7ebQmpbLZjk0/H/Uaoyw5MDZC
+        B8f0kwip4LNhTuRa/AHEeZC7fzzII00PluWzJNBWZ1Upw7/ZhsIp0Z00UBPCt9LF
+        PugIGfAvqTmA3XnTqpL5Tl7ugOLnO7ikddN5DQIDAQABAoIBAQC9u8L3dk+eOShe
+        dH9jCLlM5ERnegxcfq0uHZ4x4yU3oekfDOsUcxhuR2bcJM8LS0u801Nm4DnBwkDb
+        j46PAZNXNPxhG5Q9cbt1T8yjMYYanKMjepRon0Dp5p5VNFg7avQlt93seEMae9ck
+        EdNRoc9BraGJyei44qFkQC8C2N9CVLeWY3+kmcOj1DAWA4OFAVmm+gpAMOdhWJXe
+        1QLrEF970qb4SDwofCp2LuLWIEL4PCIbYx6CqAMDH6PJmd8Xp18DMpRa5DzOLMeg
+        +kyBmRIVHuCE/8tcvTu+wld4aqJodD34ct83OC8jZHM34JZ3SO+Bfe3CIQdRiQrw
+        xnrmI3tRAoGBAOjU1ZlFz34OHpFeidvanN0lxSO6GBHV2qgU/Ut7EauvlftSq647
+        8CUjofW8gdRRZfdYP38sSXQTYFSbsp3YAcqPJU+NVPANTudCyuL1jRlzdrfqmx5I
+        pwl1EveDGHdiuOF9SlaYThzjU0OHetPH4+7dMn9U9NV+a4V3sBb2HCEDAoGBAOEP
+        LGBhK6Eb0TIfQxqFpgFJ/8gcfiIp5xpNxJWHv3oGTDkYFa8cCKWbVAQjOxIHRbuz
+        kMVt0KMB8oGhdDpQNK2KtDwGnI1rcxrSgmvCJGn2dTB/udL+DYAAKWFKg7+YJqXx
+        WpV6uetd6EKSGChSqMLkwDUzDVA0NVpXWnoPivivAoGAX415W73audDxmpdB3IiL
+        d/bYQSFOX4N0iSaUDTYkumEFHG+BJbBTjephvYfvgEMnpasB5B84xfptvktnsn/D
+        vG204QEPqrTLfP1cZmh/z8IjJreRkYwfgTIa5plWoShS17PyDjfTVue0dDJVpjSS
+        xqTg5IDpOfT4C35jkgkq4iECgYAKIkvGPznetEj0L9IutIvoDPP2h8nqMebVGWFb
+        tlQZ44S1IW+AhguhoV/kG84CHs+2Bvzi1vIJFQJdce6w3YGxusgo18de2tLBB2+V
+        +JT5LH7UYzvz0zq6Y8d5OQi7rNc4q6h/iJosjfryXG+4CRjORcyd2KGl1eP9IGfT
+        jTWdwwKBgH3z9MMKbz9Hdi4FKMwtBr7iXrgqKtfCI4HIbd0bTHhdotE2a5fWxilW
+        WoZvBVQxUY//oXZ98jk/YodPLLeq8l/BgEtU6ggtF1RMie+ovSqxLx+gvaUBapAc
+        LqP4uSVmktuP/iZwBn9vlRkKiJo0chPNqYfzuknAcgeYgpT2zHDB
+        -----END RSA PRIVATE KEY-----
+    links:
+      - postgres:postgres
+    ports:
+      - '2220:22'
+      - '3000:3000'
+    provision:
+      - script: dockage/provision/nginx-config.sh
+```
+
 ## Contributing
 
 1. Fork it ( https://github.com/kressh/dockage/fork )
