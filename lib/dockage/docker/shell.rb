@@ -137,7 +137,7 @@ module Dockage
         container[:links].each do |link|
           dependency_name = link.split(':').first
           next if active_containers.select { |con| con[:name] == dependency_name }.any?
-          dependency_container = Dockage.settings.containers.select { |con| con[:name] == dependency_name }.first
+          dependency_container = Dockage.settings[:containers].select { |con| con[:name] == dependency_name }.first
           unless dependency_container
             Dockage.error("#{dependency_name.bold} is required for " \
                          "#{container[:name]} but does not specified " \
