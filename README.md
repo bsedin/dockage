@@ -1,3 +1,6 @@
+
+### This repo is no longer maintained. I suggest you to use [docker-compose](https://docs.docker.com/compose/) tool.
+
 # Dockage [![Dependency Status](https://gemnasium.com/kressh/dockage.svg)](https://gemnasium.com/kressh/dockage) [![Code Climate](https://codeclimate.com/github/kressh/dockage/badges/gpa.svg)](https://codeclimate.com/github/kressh/dockage) [![Build Status](https://travis-ci.org/kressh/dockage.svg?branch=master)](https://travis-ci.org/kressh/dockage) [![Gem Version](https://badge.fury.io/rb/dockage.svg)](http://badge.fury.io/rb/dockage)
 
 Ruby tool to manage multiple Docker containers at once
